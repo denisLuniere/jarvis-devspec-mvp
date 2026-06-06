@@ -20,6 +20,21 @@ class CommandRouter:
         if command in {"/help", "help", "ajuda"}:
             return self.help()
 
+
+        if command.startswith("/spec start "):
+            raw = command.replace("/spec start ", "", 1).strip()
+            parts = raw.split(" ", 1)
+            if len(parts) < 2:
+                return "Uso: /spec start <caminho-projeto> <nome-da-feature>"
+            return self.spec_engine.start_spec(Path(parts[0]), parts[1])
+
+        if command.startswith("/spec status "):
+            raw = command.replace("/spec status ", "", 1).strip()
+            parts = raw.split(" ", 1)
+            if len(parts) < 2:
+                return "Uso: /spec status <caminho-projeto> <nome-da-feature>"
+            return self.spec_engine.status_feature(Path(parts[0]), parts[1])
+
         if command.startswith("/spec init "):
             project_path = Path(command.replace("/spec init ", "", 1).strip())
             return self.spec_engine.init_project(project_path)
@@ -104,6 +119,8 @@ class CommandRouter:
     def help(self) -> str:
         return """Comandos disponíveis:
 
+/spec start <caminho-projeto> <nome-da-feature>
+/spec status <caminho-projeto> <nome-da-feature>
 /spec init <caminho-projeto>
 /spec new <caminho-projeto> <nome-da-feature>
 /spec list <caminho-projeto>

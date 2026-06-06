@@ -1,62 +1,47 @@
 # Roadmap do Jarvis DevSpec
 
-## Visão
-
-Construir um assistente local capaz de conversar por voz, entender especificações, gerar código dentro da arquitetura definida e validar funcionalidades com segurança.
-
-## Status atual
-
-### v0.1
-Concluído.
-
+## v0.1
 - CLI.
 - SPEC init.
 - SPEC new.
-- Abertura de programas.
-- Shell com confirmação.
 - Segurança básica.
 
-### v0.2
-Concluído.
+## v0.2
+- Refinamento.
+- Design.
+- Tasks.
 
-- `/spec refine`
-- `/spec design`
-- `/spec tasks`
-- `/spec list`
-
-### v0.3
-Concluído.
-
-- `/spec implement <projeto> <feature> <task-number>`
-- `/spec implement <projeto> <feature> <task-number> --preview`
+## v0.3
+- Implementação por task.
+- Preview.
 - Aplicação segura de arquivos.
-- Relatório de implementação.
 
-### v0.3.1
-Concluído.
+## v0.3.1
+- `jarvis --text`.
+- `jarvis --voice`.
+- Fallback automático.
 
-- `jarvis --text`
-- `jarvis --voice`
-- `jarvis --voice --no-tts`
-- Fallback automático para terminal.
+## v0.4
+- Validation Engine.
+- `.jarvis/validation.toml`.
+- Atualização do `08-validation-report.md`.
 
-### v0.4
+## v0.5
 Concluído neste pacote.
 
-- `/spec validate <projeto> <feature>`
-- `.jarvis/validation.toml`
-- Execução de comandos configuráveis.
-- Timeout por comando.
-- Atualização automática de `08-validation-report.md`.
-- Resumo de sucesso/falha.
+- `/spec start <projeto> <feature>`.
+- `/spec status <projeto> <feature>`.
+- Criação guiada e idempotente do projeto.
+- Exibição das dependências do fluxo.
+- Criação antecipada do `validation.toml`.
 
 ## Próximas versões
 
-### v0.5
+### v0.6
 - Modo diff antes de aplicar arquivos.
-- Melhorar suporte a voz.
-- Melhorar leitura de estrutura do projeto.
-- Sugestão automática de comandos de validação conforme stack.
+- Auto-detecção de stack.
+- Sugestão automática de comandos de validação.
+- Melhorar integração com provedores reais.
 
 ### v1.0
 - Refinar.

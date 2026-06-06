@@ -10,6 +10,7 @@ from jarvis.specs.prompts import (
 )
 from jarvis.specs.implementation import ImplementationParser, ImplementationApplier
 from jarvis.validation.validation_engine import ValidationEngine
+from jarvis.specs.workflow import SpecWorkflowInspector
 
 def slugify(value: str) -> str:
     return (
@@ -27,6 +28,44 @@ class SpecEngine:
         self.implementation_parser = ImplementationParser()
         self.implementation_applier = ImplementationApplier(file_tool)
         self.validation_engine = ValidationEngine(file_tool.guard)
+        self.workflow_inspector = SpecWorkflowInspector()
+
+
+    def start_spec(self, project_path: Path, feature_name: str) -> str:
+        """Cria a estrutura do projeto e da feature em um fluxo único e idempotente."""
+        messages: list[str] = []
+
+        jarvis_dir = project_path / ".jarvis"
+        feature_slug = slugify(feature_name)
+        spec_dir = jarvis_dir / "specs" / feature_slug
+
+        if not jarvis_dir.exists():
+            messages.append("Inicializando estrutura .jarvis...")
+            messages.append(self.init_project(project_path))
+        else:
+            self.file_tool.guard.require_allowed_path(jarvis_dir)
+            messages.append(f"Estrutura .jarvis já existe: {jarvis_dir}")
+
+        if not spec_dir.exists():
+            messages.append("Criando SPEC da feature...")
+            messages.append(self.new_spec(project_path, feature_name))
+        else:
+            self.file_tool.guard.require_allowed_path(spec_dir)
+            messages.append(f"SPEC já existe: {spec_dir}")
+
+        # Garante que a configuração de validação exista cedo.
+        validation_config = self.validation_engine.ensure_config(project_path)
+        messages.append(f"Configuração de validação pronta: {validation_config}")
+
+        messages.append("")
+        messages.append(self.workflow_inspector.render_status(project_path, feature_name, feature_slug))
+        return "\n".join(messages)
+
+    def status_feature(self, project_path: Path, feature_name: str) -> str:
+        feature_slug = slugify(feature_name)
+        self.file_tool.guard.require_allowed_path(project_path)
+        return self.workflow_inspector.render_status(project_path, feature_name, feature_slug)
+
 
     def init_project(self, project_path: Path) -> str:
         jarvis_dir = project_path / ".jarvis"

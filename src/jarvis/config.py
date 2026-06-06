@@ -14,6 +14,16 @@ class JarvisConfig:
     allowed_root: Path = Path(os.getenv("JARVIS_ALLOWED_ROOT", str(Path.home()))).expanduser()
     require_confirmation: bool = os.getenv("JARVIS_REQUIRE_CONFIRMATION", "true").lower() == "true"
 
+    manual_open_prompt: bool = os.getenv("JARVIS_MANUAL_OPEN_PROMPT", "true").lower() == "true"
+    manual_editor: str = os.getenv("JARVIS_MANUAL_EDITOR", "notepad")
+
+    browser_url: str = os.getenv("JARVIS_BROWSER_URL", "https://chatgpt.com/")
+    browser_profile: Path = Path(os.getenv("JARVIS_BROWSER_PROFILE", ".jarvis/browser-profile")).expanduser()
+    browser_headless: bool = os.getenv("JARVIS_BROWSER_HEADLESS", "false").lower() == "true"
+    browser_timeout_seconds: int = int(os.getenv("JARVIS_BROWSER_TIMEOUT_SECONDS", "240"))
+    browser_auto_open: bool = os.getenv("JARVIS_BROWSER_AUTO_OPEN", "true").lower() == "true"
+    browser_keep_open: bool = os.getenv("JARVIS_BROWSER_KEEP_OPEN", "true").lower() == "true"
+
     voice_enabled: bool = os.getenv("JARVIS_VOICE_ENABLED", "false").lower() == "true"
     voice_language: str = os.getenv("JARVIS_VOICE_LANGUAGE", "pt-BR")
     tts_enabled: bool = os.getenv("JARVIS_TTS_ENABLED", "true").lower() == "true"

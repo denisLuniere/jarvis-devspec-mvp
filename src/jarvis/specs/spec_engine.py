@@ -179,12 +179,16 @@ class SpecEngine:
         self.file_tool.write_text(proposal_path, response)
 
         proposed_files = self.implementation_parser.parse_files(response)
+        file_diffs = self.implementation_applier.build_diffs(project_path, proposed_files) if proposed_files else []
         apply_results: list[str] = []
 
         if apply_changes and proposed_files:
             apply_results = self.implementation_applier.apply(project_path, proposed_files)
         elif not proposed_files:
-            apply_results = ["Nenhum bloco ```file path=...``` encontrado. Nada foi aplicado no projeto."]
+            apply_results = [
+                "Nenhum bloco ```file path=...``` encontrado. Nada foi aplicado no projeto.",
+                "Dica: use um provider real ou ajuste o prompt para retornar blocos estruturados.",
+            ]
         else:
             apply_results = ["Modo preview: alterações não aplicadas."]
 
@@ -195,6 +199,7 @@ class SpecEngine:
             proposed_files=proposed_files,
             apply_results=apply_results,
             apply_changes=apply_changes,
+            file_diffs=file_diffs,
         )
 
         report_path = impl_dir / f"task-{task_number}-{timestamp}-report.md"
@@ -311,10 +316,18 @@ Seja objetivo, prático e mantenha rastreabilidade.
         proposed_files: list,
         apply_results: list[str],
         apply_changes: bool,
+        file_diffs: list | None = None,
     ) -> str:
         files_md = "\n".join(f"- `{f.relative_path}`" for f in proposed_files) or "- Nenhum arquivo proposto."
         results_md = "\n".join(f"- {result}" for result in apply_results) or "- Nenhum resultado."
-
+        diff_sections = []
+        for item in file_diffs or []:
+            diff_sections.append(
+                f"### `{item.relative_path}`\n\n"
+                f"Arquivo existente: {'sim' if item.exists else 'não'}\n\n"
+                f"```diff\n{item.diff_text}\n```"
+            )
+        diffs_md = "\n\n".join(diff_sections) or "Nenhum diff disponível."
         return f"""# Implementation Report
 
 ## Feature
@@ -337,6 +350,10 @@ Seja objetivo, prático e mantenha rastreabilidade.
 
 {files_md}
 
+## Diff / Preview
+
+{diffs_md}
+
 ## Resultado da aplicação
 
 {results_md}
@@ -344,8 +361,8 @@ Seja objetivo, prático e mantenha rastreabilidade.
 ## Próximas validações sugeridas
 
 - Revisar diff no Git.
-- Rodar testes do projeto.
-- Atualizar `08-validation-report.md`.
+- Rodar `/spec validate`.
+- Atualizar `08-validation-report.md`, se necessário.
 """
 
     def _project_context_template(self) -> str:

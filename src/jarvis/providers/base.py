@@ -8,7 +8,6 @@ class LLMProvider(ABC):
 class FakeProvider(LLMProvider):
     def generate(self, system_prompt: str, user_prompt: str) -> str:
         lower_prompt = user_prompt.lower()
-
         if "gere perguntas de refinamento" in lower_prompt or "refinar a especificação" in lower_prompt:
             return """# Perguntas de Refinamento
 
@@ -20,8 +19,7 @@ class FakeProvider(LLMProvider):
 - [ ] Existe integração com banco, API, fila, Databricks ou outro sistema?
 - [ ] Quais critérios indicam que a funcionalidade foi concluída com sucesso?
 """
-
-        if "gere o design técnico" in lower_prompt:
+        if "gere o design técnico" in lower_prompt or "gerar o design técnico" in lower_prompt:
             return """# Technical Design
 
 ## Estratégia técnica
@@ -42,15 +40,8 @@ Implementar a funcionalidade respeitando a arquitetura definida em `.jarvis/arch
 - Validar regras de negócio.
 - Tratar erros conhecidos.
 - Registrar logs quando aplicável.
-
-## Riscos técnicos
-
-- Especificação incompleta.
-- Dependências externas não mapeadas.
-- Testes insuficientes.
 """
-
-        if "gere uma lista de tasks" in lower_prompt:
+        if "gere uma lista de tasks" in lower_prompt or "gerar uma lista de tasks" in lower_prompt:
             return """# Tasks
 
 - [ ] 1. Revisar requisitos e perguntas respondidas.
@@ -64,11 +55,12 @@ Implementar a funcionalidade respeitando a arquitetura definida em `.jarvis/arch
 - [ ] 9. Rodar build/testes/lint.
 - [ ] 10. Atualizar relatório de validação.
 """
-
-        if "implemente a task" in lower_prompt:
+        if "implementar uma task" in lower_prompt or "task solicitada" in lower_prompt or "implementação proposta" in lower_prompt:
             return """# Implementação proposta
 
-Modo fake ativo: este exemplo cria apenas um arquivo demonstrativo dentro de `docs/`.
+## Resumo
+
+Modo fake ativo: criando um arquivo demonstrativo para validar o fluxo de implementação.
 
 ## Arquivos propostos
 
@@ -77,16 +69,17 @@ Modo fake ativo: este exemplo cria apenas um arquivo demonstrativo dentro de `do
 
 Este arquivo foi criado pelo comando `/spec implement`.
 
-Em um provider real, como OpenAI ou Claude, a IA deve gerar arquivos compatíveis com a arquitetura do projeto.
+Objetivo:
+- Validar o parser de blocos `file path=...`.
+- Validar o modo preview/diff.
+- Validar a aplicação segura de arquivos.
+
+Quando usar OpenAI ou Claude, a IA deverá gerar arquivos reais compatíveis com a arquitetura do projeto.
 ```
 
 ## Validações sugeridas
 
-- Revisar o arquivo gerado.
-- Rodar testes do projeto quando existirem.
+- Revisar o diff gerado.
+- Rodar `/spec validate`.
 """
-
-        return (
-            "Sou o Jarvis DevSpec MVP em modo local/fake. "
-            "Para respostas inteligentes reais, configure JARVIS_PROVIDER=openai ou anthropic no .env."
-        )
+        return "Sou o Jarvis DevSpec MVP em modo local/fake. Para respostas inteligentes reais, configure JARVIS_PROVIDER=openai ou anthropic no .env."

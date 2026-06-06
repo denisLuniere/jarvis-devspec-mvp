@@ -79,6 +79,19 @@ class CommandRouter:
                 return "Uso: /spec validate <caminho-projeto> <nome-da-feature>"
             return self.spec_engine.validate_feature(Path(parts[0]), parts[1])
 
+
+        if command.startswith("/spec diff "):
+            raw = command.replace("/spec diff ", "", 1).strip()
+            parts = raw.rsplit(" ", 1)
+            if len(parts) < 2:
+                return "Uso: /spec diff <caminho-projeto> <nome-da-feature> <numero-task>"
+            project_and_feature = parts[0]
+            task_number = parts[1].strip()
+            project_feature_parts = project_and_feature.split(" ", 1)
+            if len(project_feature_parts) < 2:
+                return "Uso: /spec diff <caminho-projeto> <nome-da-feature> <numero-task>"
+            return self.spec_engine.implement_task(Path(project_feature_parts[0]), project_feature_parts[1], task_number, apply_changes=False)
+
         if command.startswith("/spec implement "):
             raw = command.replace("/spec implement ", "", 1).strip()
             apply_changes = True
@@ -129,6 +142,7 @@ class CommandRouter:
 /spec tasks <caminho-projeto> <nome-da-feature>
 /spec implement <caminho-projeto> <nome-da-feature> <numero-task>
 /spec implement <caminho-projeto> <nome-da-feature> <numero-task> --preview
+/spec diff <caminho-projeto> <nome-da-feature> <numero-task>
 /spec validate <caminho-projeto> <nome-da-feature>
 /open vscode
 /open chrome

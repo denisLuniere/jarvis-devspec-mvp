@@ -1,6 +1,6 @@
 [project]
 name = "jarvis-devspec-mvp"
-version = "0.5.0"
+version = "0.8.0"
 description = "Jarvis local com desenvolvimento orientado por especificações"
 requires-python = ">=3.11"
 dependencies = [
@@ -10,6 +10,10 @@ dependencies = [
 [project.optional-dependencies]
 openai = ["openai>=1.0.0"]
 anthropic = ["anthropic>=0.34.0"]
+browser = [
+    "playwright>=1.45.0",
+    "pyperclip>=1.9.0",
+]
 voice = [
     "SpeechRecognition>=3.10.0",
     "pyttsx3>=2.90",
@@ -18,6 +22,8 @@ voice = [
 all = [
     "openai>=1.0.0",
     "anthropic>=0.34.0",
+    "playwright>=1.45.0",
+    "pyperclip>=1.9.0",
     "SpeechRecognition>=3.10.0",
     "pyttsx3>=2.90",
     "PyAudio>=0.2.14",

@@ -4,19 +4,20 @@ Assistente local inspirado no J.A.R.V.I.S., focado em desenvolvimento orientado 
 
 ## Versão atual
 
-v0.5.0
+v0.8.0
 
 ## Principais recursos
 
+- Provider `browser` experimental para automatizar ChatGPT Web.
+- Provider `manual` para usar ChatGPT Plus por copia-e-cola.
+- Provider `fake` para testes sem IA real.
+- Provider `openai` para API da OpenAI.
 - Modo terminal: `jarvis --text`.
 - Modo voz: `jarvis --voice`.
 - Fluxo guiado de SPEC com `/spec start`.
-- Status da feature com `/spec status`.
-- Refinamento, design, tasks, implementação e validação.
-- Validation Engine com `.jarvis/validation.toml`.
-- Aplicação segura de arquivos via blocos `file path=...`.
+- Diff, implementação e validação.
 
-## Instalação
+## Instalação base
 
 ```powershell
 cd E:\Repositories\jarvis-devspec-mvp
@@ -25,107 +26,81 @@ python -m pip install --upgrade pip
 pip install -e .
 ```
 
-Para tudo:
+## Instalação do browser provider
 
 ```powershell
-pip install -e ".[all]"
+pip install -e ".[browser]"
+python -m playwright install chromium
 ```
 
-## Formas de iniciar
+## Configuração para automação do ChatGPT Web
+
+No `.env`:
+
+```env
+JARVIS_PROVIDER=browser
+JARVIS_ALLOWED_ROOT=E:\projects
+JARVIS_REQUIRE_CONFIRMATION=true
+
+JARVIS_BROWSER_URL=https://chatgpt.com/
+JARVIS_BROWSER_PROFILE=.jarvis/browser-profile
+JARVIS_BROWSER_HEADLESS=false
+JARVIS_BROWSER_TIMEOUT_SECONDS=240
+JARVIS_BROWSER_KEEP_OPEN=true
+
+JARVIS_VOICE_ENABLED=false
+```
+
+## Como usar
 
 ```powershell
 jarvis --text
-jarvis --voice
-jarvis --voice --no-tts
+```
+
+Depois:
+
+```text
+/spec refine E:\projects\teste-jarvis registro-inconsistencias-wiki
+```
+
+Na primeira execução, o navegador abre e você faz login manualmente no ChatGPT. Depois disso, a sessão tende a ficar salva no perfil do Playwright.
+
+## Fallback
+
+Se a automação do browser falhar, o Jarvis cai automaticamente para o modo manual:
+
+```text
+Cole a resposta abaixo.
+Finalize com <<<END>>>
 ```
 
 ## Fluxo recomendado
 
-Agora você pode começar uma feature com um comando só:
-
 ```text
 /spec start E:\projects\teste-jarvis registro-inconsistencias-wiki
-```
-
-Esse comando faz, de forma idempotente:
-
-1. cria `.jarvis/`, se não existir;
-2. cria a SPEC da feature, se não existir;
-3. cria `.jarvis/validation.toml`, se não existir;
-4. mostra o status da estrutura.
-
-Depois siga:
-
-```text
 /spec refine E:\projects\teste-jarvis registro-inconsistencias-wiki
 /spec design E:\projects\teste-jarvis registro-inconsistencias-wiki
 /spec tasks E:\projects\teste-jarvis registro-inconsistencias-wiki
-/spec implement E:\projects\teste-jarvis registro-inconsistencias-wiki 5 --preview
+/spec diff E:\projects\teste-jarvis registro-inconsistencias-wiki 5
 /spec implement E:\projects\teste-jarvis registro-inconsistencias-wiki 5
 /spec validate E:\projects\teste-jarvis registro-inconsistencias-wiki
 ```
 
-## Comandos
+## Arquivos gerados pelo browser provider
 
 ```text
-/help
-/spec start E:\projects\teste-jarvis registro-inconsistencias-wiki
-/spec status E:\projects\teste-jarvis registro-inconsistencias-wiki
-/spec init E:\projects\teste-jarvis
-/spec new E:\projects\teste-jarvis registro-inconsistencias-wiki
-/spec list E:\projects\teste-jarvis
-/spec refine E:\projects\teste-jarvis registro-inconsistencias-wiki
-/spec design E:\projects\teste-jarvis registro-inconsistencias-wiki
-/spec tasks E:\projects\teste-jarvis registro-inconsistencias-wiki
-/spec implement E:\projects\teste-jarvis registro-inconsistencias-wiki 5
-/spec implement E:\projects\teste-jarvis registro-inconsistencias-wiki 5 --preview
-/spec validate E:\projects\teste-jarvis registro-inconsistencias-wiki
-/open vscode
-/open chrome
-/run E:\projects\teste-jarvis mvn test
-/exit
+.jarvis/browser/outbox
+.jarvis/browser/inbox
+.jarvis/browser/errors
+.jarvis/browser-profile
 ```
 
-## Validation Engine
-
-O arquivo abaixo define as validações:
-
-```text
-.jarvis/validation.toml
-```
-
-Exemplo Java/Spring:
-
-```toml
-[[commands]]
-name = "Maven tests"
-command = "mvn test"
-timeout_seconds = 300
-
-[[commands]]
-name = "Maven package"
-command = "mvn clean package -DskipTests"
-timeout_seconds = 300
-```
-
-Exemplo Python:
-
-```toml
-[[commands]]
-name = "Python compileall"
-command = "python -m compileall src"
-timeout_seconds = 180
-
-[[commands]]
-name = "Pytest"
-command = "pytest"
-timeout_seconds = 300
-```
+Não suba esses arquivos para o Git.
 
 ## Roadmap
 
-### v0.6
-- Modo diff antes de aplicar arquivos.
-- Auto-detecção de stack.
-- Sugestão automática de `validation.toml`.
-- Melhor suporte a prompts reais com OpenAI/Claude.
+### v0.9
+- Melhorar detecção de estado do ChatGPT Web.
+- Melhorar extração de resposta.
+- Adicionar comando para abrir/reautenticar sessão.
+- Adicionar confirmação antes de aplicar implementação real.

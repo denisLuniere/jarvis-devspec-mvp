@@ -1,7 +1,29 @@
+from pathlib import Path
+
 from jarvis.config import JarvisConfig
 from .base import FakeProvider, LLMProvider
 
 def build_provider(config: JarvisConfig) -> LLMProvider:
+    if config.provider == "manual":
+        from .manual_provider import ManualProvider
+        return ManualProvider(
+            base_dir=Path.cwd(),
+            open_prompt=config.manual_open_prompt,
+            editor=config.manual_editor,
+        )
+
+    if config.provider == "browser":
+        from .browser_provider import BrowserProvider
+        return BrowserProvider(
+            base_dir=Path.cwd(),
+            url=config.browser_url,
+            profile_dir=config.browser_profile,
+            headless=config.browser_headless,
+            timeout_seconds=config.browser_timeout_seconds,
+            auto_open=config.browser_auto_open,
+            keep_open=config.browser_keep_open,
+        )
+
     if config.provider == "openai":
         if not config.openai_api_key:
             raise RuntimeError("OPENAI_API_KEY não configurada.")

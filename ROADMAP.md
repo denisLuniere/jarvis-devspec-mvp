@@ -16,37 +16,34 @@
 - Preview.
 - Aplicação segura de arquivos.
 
-## v0.3.1
-- `jarvis --text`.
-- `jarvis --voice`.
-- Fallback automático.
-
 ## v0.4
 - Validation Engine.
 - `.jarvis/validation.toml`.
-- Atualização do `08-validation-report.md`.
 
 ## v0.5
+- `/spec start`.
+- `/spec status`.
+
+## v0.6
+- `/spec diff`.
+- Diff real no relatório.
+
+## v0.7
+- `JARVIS_PROVIDER=manual`.
+
+## v0.8
 Concluído neste pacote.
 
-- `/spec start <projeto> <feature>`.
-- `/spec status <projeto> <feature>`.
-- Criação guiada e idempotente do projeto.
-- Exibição das dependências do fluxo.
-- Criação antecipada do `validation.toml`.
+- `JARVIS_PROVIDER=browser`.
+- Automação experimental do ChatGPT Web com Playwright.
+- Sessão persistente em `.jarvis/browser-profile`.
+- Fallback automático para modo manual.
+- Registro de prompts, respostas e erros.
 
 ## Próximas versões
 
-### v0.6
-- Modo diff antes de aplicar arquivos.
-- Auto-detecção de stack.
-- Sugestão automática de comandos de validação.
-- Melhorar integração com provedores reais.
-
-### v1.0
-- Refinar.
-- Desenhar.
-- Planejar.
-- Implementar.
-- Validar.
-- Documentar.
+### v0.9
+- Robustez do browser provider.
+- Reautenticação guiada.
+- Melhor extração de resposta.
+- Confirmação interativa antes de aplicar arquivos.

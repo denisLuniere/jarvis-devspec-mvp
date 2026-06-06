@@ -9,6 +9,7 @@ from jarvis.specs.prompts import (
     build_implement_prompt,
 )
 from jarvis.specs.implementation import ImplementationParser, ImplementationApplier
+from jarvis.validation.validation_engine import ValidationEngine
 
 def slugify(value: str) -> str:
     return (
@@ -25,6 +26,7 @@ class SpecEngine:
         self.provider = provider
         self.implementation_parser = ImplementationParser()
         self.implementation_applier = ImplementationApplier(file_tool)
+        self.validation_engine = ValidationEngine(file_tool.guard)
 
     def init_project(self, project_path: Path) -> str:
         jarvis_dir = project_path / ".jarvis"
@@ -183,6 +185,37 @@ class SpecEngine:
             return "Nenhuma spec encontrada."
 
         return "Specs encontradas:\n" + "\n".join(f"- {name}" for name in specs)
+
+
+    def validate_feature(self, project_path: Path, feature_name: str) -> str:
+        spec_dir = self._spec_dir(project_path, feature_name)
+        config_path, results = self.validation_engine.run(project_path)
+
+        report = self.validation_engine.build_report(
+            feature_name=feature_name,
+            config_path=config_path,
+            results=results,
+        )
+
+        report_path = spec_dir / "08-validation-report.md"
+        self.file_tool.write_text(report_path, report)
+
+        self._append_changelog(
+            spec_dir,
+            f"Validação executada para '{feature_name}'. Total: {len(results)}.",
+        )
+
+        fail_count = sum(1 for item in results if not item.success)
+        status = "APROVADO" if results and fail_count == 0 else "REPROVADO" if results else "SEM VALIDACOES"
+
+        return (
+            f"Validação concluída: {status}\n"
+            f"Configuração: {config_path}\n"
+            f"Relatório: {report_path}\n"
+            f"Validações executadas: {len(results)}\n"
+            f"Falhas: {fail_count}"
+        )
+
 
     def _require_provider(self) -> None:
         if self.provider is None:

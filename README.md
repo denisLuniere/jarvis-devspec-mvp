@@ -4,13 +4,14 @@ Assistente local inspirado no J.A.R.V.I.S., focado em desenvolvimento orientado 
 
 ## Versão atual
 
-v0.3.0
+v0.4.0
 
 ## Funcionalidades
 
 - Conversar via terminal.
-- Modo voz opcional.
-- Leitura das respostas em voz alta.
+- Iniciar explicitamente em modo terminal com `jarvis --text`.
+- Iniciar explicitamente em modo voz com `jarvis --voice`.
+- Fallback automático para terminal quando dependências de voz faltarem.
 - Criar estrutura `.jarvis/` dentro de projetos.
 - Criar nova SPEC de funcionalidade.
 - Gerar perguntas de refinamento via IA.
@@ -19,56 +20,51 @@ v0.3.0
 - Implementar task por task via IA.
 - Aplicar arquivos propostos com blocos estruturados.
 - Gerar relatório de implementação.
+- Rodar validações configuráveis com `/spec validate`.
+- Atualizar `08-validation-report.md`.
 - Abrir programas no Windows por comandos permitidos.
 - Rodar comandos locais somente com confirmação.
 - Usar provider `fake`, `openai` ou `anthropic`.
-- Bloquear comandos perigosos básicos.
 
 ## Instalação
 
-Requer Python 3.11+.
-
-```bash
-cd jarvis-devspec-mvp
-python -m venv .venv
-.venv\Scripts\activate
+```powershell
+cd E:\Repositories\jarvis-devspec-mvp
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
 pip install -e .
 ```
 
-Para usar OpenAI:
+Para voz:
 
-```bash
-pip install -e .[openai]
+```powershell
+pip install -e ".[voice]"
 ```
 
-Para usar Claude:
+Para tudo:
 
-```bash
-pip install -e .[anthropic]
+```powershell
+pip install -e ".[all]"
 ```
 
-Para usar voz:
+## Formas de iniciar
 
-```bash
-pip install -e .[voice]
+Modo terminal:
+
+```powershell
+jarvis --text
 ```
 
-## Exemplo de `.env`
+Modo voz:
 
-```env
-JARVIS_PROVIDER=fake
-JARVIS_MODEL=gpt-4.1-mini
-JARVIS_ALLOWED_ROOT=E:\Repositories
-JARVIS_REQUIRE_CONFIRMATION=true
+```powershell
+jarvis --voice
+```
 
-JARVIS_VOICE_ENABLED=true
-JARVIS_VOICE_LANGUAGE=pt-BR
-JARVIS_TTS_ENABLED=true
-JARVIS_TTS_RATE=185
-JARVIS_TTS_VOLUME=1.0
-JARVIS_WAKE_WORD=jarvis
-JARVIS_LISTEN_TIMEOUT=5
-JARVIS_PHRASE_TIME_LIMIT=12
+Modo voz sem resposta falada:
+
+```powershell
+jarvis --voice --no-tts
 ```
 
 ## Comandos
@@ -83,28 +79,82 @@ JARVIS_PHRASE_TIME_LIMIT=12
 /spec tasks E:\Repositories\meu-projeto registro-inconsistencias-wiki
 /spec implement E:\Repositories\meu-projeto registro-inconsistencias-wiki 5
 /spec implement E:\Repositories\meu-projeto registro-inconsistencias-wiki 5 --preview
+/spec validate E:\Repositories\meu-projeto registro-inconsistencias-wiki
 /open vscode
 /open chrome
 /run E:\Repositories\meu-projeto mvn test
 /exit
 ```
 
-## Novo fluxo da v0.3
+## Validation Engine
+
+Ao rodar:
 
 ```text
-1. /spec init <projeto>
-2. Editar .jarvis/project-context.md
-3. Editar .jarvis/architecture.md
-4. /spec new <projeto> <feature>
-5. Editar 01-requirements.md
-6. /spec refine <projeto> <feature>
-7. Responder 02-questions.md
-8. Ajustar 04-acceptance-criteria.md
-9. /spec design <projeto> <feature>
-10. /spec tasks <projeto> <feature>
-11. /spec implement <projeto> <feature> <numero-task> --preview
-12. Revisar proposta
-13. /spec implement <projeto> <feature> <numero-task>
+/spec validate E:\Repositories\meu-projeto registro-inconsistencias-wiki
+```
+
+o Jarvis cria, se ainda não existir:
+
+```text
+.jarvis/validation.toml
+```
+
+Configuração padrão:
+
+```toml
+[[commands]]
+name = "Python compileall"
+command = "python -m compileall src"
+timeout_seconds = 180
+```
+
+Você pode ajustar para Java/Spring Boot:
+
+```toml
+[[commands]]
+name = "Maven tests"
+command = "mvn test"
+timeout_seconds = 300
+
+[[commands]]
+name = "Maven package"
+command = "mvn clean package -DskipTests"
+timeout_seconds = 300
+```
+
+Para frontend:
+
+```toml
+[[commands]]
+name = "NPM test"
+command = "npm test"
+timeout_seconds = 300
+
+[[commands]]
+name = "NPM build"
+command = "npm run build"
+timeout_seconds = 300
+```
+
+Para Python:
+
+```toml
+[[commands]]
+name = "Pytest"
+command = "pytest"
+timeout_seconds = 300
+
+[[commands]]
+name = "Ruff"
+command = "ruff check ."
+timeout_seconds = 180
+```
+
+O relatório é salvo em:
+
+```text
+.jarvis/specs/<feature>/08-validation-report.md
 ```
 
 ## Como o Jarvis aplica arquivos
@@ -119,35 +169,12 @@ conteúdo completo do arquivo
 
 O Jarvis só aplica arquivos com caminhos relativos ao projeto.
 
-Bloqueios básicos:
-
-- caminhos absolutos;
-- caminhos com `..`;
-- `.git`;
-- `.venv`;
-- executáveis e scripts sensíveis como `.exe`, `.bat`, `.cmd`, `.ps1`, `.key`, `.pem`.
-
-## Relatórios
-
-Cada implementação gera arquivos em:
-
-```text
-.jarvis/specs/<feature>/10-implementation/
-```
-
-Exemplo:
-
-```text
-task-5-20260606-153012-proposal.md
-task-5-20260606-153012-report.md
-```
-
 ## Roadmap
 
-### v0.4
-- Validation engine.
-- Rodar testes/build/lint configuráveis.
-- Atualizar validation-report.md.
+### v0.5
+- Melhorar TTS/STT.
+- Melhorar prompts de implementação.
+- Criar modo diff antes de aplicar arquivos.
 
 ### v1.0
 - Fluxo completo:

@@ -56,6 +56,14 @@ class CommandRouter:
                 return "Uso: /spec tasks <caminho-projeto> <nome-da-feature>"
             return self.spec_engine.generate_tasks(Path(parts[0]), parts[1])
 
+
+        if command.startswith("/spec validate "):
+            raw = command.replace("/spec validate ", "", 1).strip()
+            parts = raw.split(" ", 1)
+            if len(parts) < 2:
+                return "Uso: /spec validate <caminho-projeto> <nome-da-feature>"
+            return self.spec_engine.validate_feature(Path(parts[0]), parts[1])
+
         if command.startswith("/spec implement "):
             raw = command.replace("/spec implement ", "", 1).strip()
             apply_changes = True
@@ -104,6 +112,7 @@ class CommandRouter:
 /spec tasks <caminho-projeto> <nome-da-feature>
 /spec implement <caminho-projeto> <nome-da-feature> <numero-task>
 /spec implement <caminho-projeto> <nome-da-feature> <numero-task> --preview
+/spec validate <caminho-projeto> <nome-da-feature>
 /open vscode
 /open chrome
 /run <caminho-projeto> <comando>

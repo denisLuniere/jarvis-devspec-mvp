@@ -1,33 +1,53 @@
 # Modo Voz do Jarvis
 
-## Instalação
+## Modos disponíveis
 
-Ative sua venv:
+A partir da v0.3.1, o Jarvis pode iniciar em modo texto ou voz.
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-Instale as dependências de voz:
+### Terminal sempre
 
 ```powershell
-pip install -e .[voice]
+jarvis --text
 ```
 
-Se o PyAudio falhar no Windows, tente:
+### Voz
+
+```powershell
+jarvis --voice
+```
+
+### Sem parâmetro
+
+```powershell
+jarvis
+```
+
+Nesse caso, ele usa o valor do `.env`:
+
+```env
+JARVIS_VOICE_ENABLED=false
+```
+
+Recomendação: deixe `false` por padrão e use `jarvis --voice` quando quiser falar com ele.
+
+## Instalação do modo voz
+
+```powershell
+pip install -e ".[voice]"
+```
+
+Se o PyAudio falhar no Windows:
 
 ```powershell
 pip install pipwin
 pipwin install pyaudio
-pip install -e .[voice]
+pip install -e ".[voice]"
 ```
 
 ## Configuração
 
-No `.env`:
-
 ```env
-JARVIS_VOICE_ENABLED=true
+JARVIS_VOICE_ENABLED=false
 JARVIS_VOICE_LANGUAGE=pt-BR
 JARVIS_TTS_ENABLED=true
 JARVIS_TTS_RATE=185
@@ -37,34 +57,30 @@ JARVIS_LISTEN_TIMEOUT=5
 JARVIS_PHRASE_TIME_LIMIT=12
 ```
 
-## Uso
-
-```powershell
-jarvis
-```
-
-Com o modo voz ativo, fale:
+## Comandos de voz
 
 ```text
 Jarvis, ajuda
 Jarvis, abra o VS Code
-Jarvis, abrir VS Code
 Jarvis, abrir Google Chrome
 Jarvis, Chrome
 Jarvis, sair
 ```
 
-## Melhorias da v0.2.2
+## Voz sem resposta falada
 
-- Entende "abra", "abrir", "abre", "inicie", "execute".
-- Entende "vs code", "visual studio code", "google chrome".
-- Corrige reconhecimentos comuns como "Chaves sair".
-- Reinicializa o motor de voz se o pyttsx3 travar após a primeira fala.
+```powershell
+jarvis --voice --no-tts
+```
+
+Isso permite ditar comandos, mas o Jarvis responde só no terminal.
+
+## Fallback automático
+
+Se o `.env` estiver com `JARVIS_VOICE_ENABLED=true`, mas as dependências de voz não estiverem instaladas, o Jarvis não quebra mais. Ele mostra o erro e continua em modo terminal.
 
 ## Observações
 
 - O reconhecimento usa SpeechRecognition com Google Speech Recognition.
 - Precisa de internet para reconhecer voz nesse modo inicial.
 - A leitura usa pyttsx3, que funciona localmente usando as vozes do Windows.
-- Se a voz em português não estiver instalada, o Windows pode ler com voz em inglês.
-- Para melhor resultado, instale uma voz pt-BR nas configurações de idioma do Windows.

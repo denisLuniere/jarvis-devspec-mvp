@@ -1,3 +1,5 @@
+import argparse
+
 from jarvis.config import load_config
 from jarvis.providers import build_provider
 from jarvis.core.agent import JarvisAgent
@@ -9,7 +11,62 @@ from jarvis.tools.program_tool import ProgramTool
 from jarvis.tools.shell_tool import ShellTool
 from jarvis.specs.spec_engine import SpecEngine
 
-def build_app():
+def parse_args():
+    parser = argparse.ArgumentParser(
+        prog="jarvis",
+        description="Jarvis DevSpec MVP"
+    )
+
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
+        "--voice",
+        action="store_true",
+        help="Inicia o Jarvis em modo voz, independentemente do .env."
+    )
+    mode.add_argument(
+        "--text",
+        action="store_true",
+        help="Inicia o Jarvis em modo terminal, independentemente do .env."
+    )
+
+    parser.add_argument(
+        "--no-tts",
+        action="store_true",
+        help="No modo voz, escuta comandos mas não fala respostas."
+    )
+
+    return parser.parse_args()
+
+def should_enable_voice(config, args) -> bool:
+    if args.text:
+        return False
+    if args.voice:
+        return True
+    return config.voice_enabled
+
+def build_voice_loop(config, args):
+    try:
+        from jarvis.voice.stt import SpeechToText
+        from jarvis.voice.tts import TextToSpeech
+        from jarvis.voice.voice_loop import VoiceLoop
+
+        stt = SpeechToText(
+            language=config.voice_language,
+            timeout=config.listen_timeout,
+            phrase_time_limit=config.phrase_time_limit,
+            wake_word=config.wake_word,
+        )
+        tts = TextToSpeech(
+            enabled=(config.tts_enabled and not args.no_tts),
+            rate=config.tts_rate,
+            volume=config.tts_volume,
+        )
+        return VoiceLoop(stt, tts), None
+
+    except Exception as exc:
+        return None, exc
+
+def build_app(args):
     config = load_config()
     guard = SafetyGuard(config.allowed_root)
     provider = build_provider(config)
@@ -23,25 +80,12 @@ def build_app():
     agent = JarvisAgent(provider)
 
     voice_loop = None
-    if config.voice_enabled:
-        from jarvis.voice.stt import SpeechToText
-        from jarvis.voice.tts import TextToSpeech
-        from jarvis.voice.voice_loop import VoiceLoop
+    voice_error = None
 
-        stt = SpeechToText(
-            language=config.voice_language,
-            timeout=config.listen_timeout,
-            phrase_time_limit=config.phrase_time_limit,
-            wake_word=config.wake_word,
-        )
-        tts = TextToSpeech(
-            enabled=config.tts_enabled,
-            rate=config.tts_rate,
-            volume=config.tts_volume,
-        )
-        voice_loop = VoiceLoop(stt, tts)
+    if should_enable_voice(config, args):
+        voice_loop, voice_error = build_voice_loop(config, args)
 
-    return router, agent, voice_loop, config
+    return router, agent, voice_loop, config, voice_error
 
 def print_and_speak(message: str, voice_loop) -> None:
     print(f"Jarvis > {message}\n")
@@ -49,13 +93,24 @@ def print_and_speak(message: str, voice_loop) -> None:
         voice_loop.say(message)
 
 def main():
-    router, agent, voice_loop, config = build_app()
+    args = parse_args()
+    router, agent, voice_loop, config, voice_error = build_app(args)
 
     print("Jarvis DevSpec MVP iniciado.")
     print("Digite /help para comandos ou /exit para sair.")
-    if config.voice_enabled:
+
+    if voice_error:
+        print("Jarvis > Modo voz solicitado, mas não consegui iniciar a voz.")
+        print(f"Jarvis > Motivo: {voice_error}")
+        print('Jarvis > Continuando em modo terminal. Para voz, instale: pip install -e ".[voice]"')
+        print("Jarvis > Você também pode iniciar direto em terminal com: jarvis --text")
+
+    if voice_loop:
         print(f"Modo voz: ATIVO | idioma={config.voice_language} | wake word='{config.wake_word}'")
         print("Fale comandos como: 'Jarvis, ajuda', 'Jarvis, abra o VS Code' ou 'Jarvis, sair'.")
+    else:
+        print("Modo terminal: ATIVO")
+        print("Para iniciar com voz: jarvis --voice")
     print()
 
     if voice_loop:

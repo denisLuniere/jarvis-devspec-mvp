@@ -22,6 +22,8 @@ def build_provider(config: JarvisConfig) -> LLMProvider:
             timeout_seconds=config.browser_timeout_seconds,
             auto_open=config.browser_auto_open,
             keep_open=config.browser_keep_open,
+            submit_mode=config.browser_submit_mode,
+            send_check_seconds=config.browser_send_check_seconds,
         )
 
     if config.provider == "openai":

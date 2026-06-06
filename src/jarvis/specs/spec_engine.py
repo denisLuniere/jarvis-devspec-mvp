@@ -173,6 +173,23 @@ class SpecEngine:
 
         response = self.provider.generate(self._system_prompt(), prompt)
 
+        # Se a IA respondeu sem blocos de arquivo, faz uma tentativa de correção automática.
+        proposed_files_first_pass = self.implementation_parser.parse_files(response)
+        if not proposed_files_first_pass:
+            correction_prompt = self._build_missing_file_blocks_correction_prompt(
+                original_prompt=prompt,
+                invalid_response=response,
+                feature_name=feature_name,
+                task_number=task_number,
+            )
+            try:
+                response = self.provider.generate(self._system_prompt(), correction_prompt)
+            except Exception as exc:
+                response = response.rstrip() + (
+                    "\n\n# Aviso do Jarvis\n\n"
+                    f"A tentativa automática de correção falhou: {exc}\n"
+                )
+
         impl_dir = spec_dir / "10-implementation"
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         proposal_path = impl_dir / f"task-{task_number}-{timestamp}-proposal.md"
@@ -306,6 +323,62 @@ Você é o Jarvis DevSpec, um assistente de engenharia de software.
 Trabalhe com desenvolvimento orientado por especificações.
 Não implemente código antes de requisitos, critérios de aceite, design técnico e tasks estarem claros.
 Seja objetivo, prático e mantenha rastreabilidade.
+"""
+
+
+    def _build_missing_file_blocks_correction_prompt(
+        self,
+        original_prompt: str,
+        invalid_response: str,
+        feature_name: str,
+        task_number: str,
+    ) -> str:
+        return f"""
+A resposta anterior não pôde ser processada pelo Jarvis porque não continha nenhum bloco no formato obrigatório:
+
+<<<FILE path=caminho/relativo/ao/projeto.ext>>>
+conteúdo completo do arquivo
+<<<END_FILE>>>
+
+Você deve corrigir a resposta agora.
+
+Funcionalidade:
+{feature_name}
+
+Task:
+{task_number}
+
+Arquivos oficiais da SPEC para correção:
+- `.jarvis/specs/{feature_name}/01-requirements.md`
+- `.jarvis/specs/{feature_name}/02-questions.md`
+- `.jarvis/specs/{feature_name}/03-decisions.md`
+- `.jarvis/specs/{feature_name}/04-acceptance-criteria.md`
+- `.jarvis/specs/{feature_name}/05-technical-design.md`
+- `.jarvis/specs/{feature_name}/06-tasks.md`
+- `.jarvis/specs/{feature_name}/07-test-plan.md`
+- `.jarvis/specs/{feature_name}/08-validation-report.md`
+- `.jarvis/specs/{feature_name}/09-changelog.md`
+
+Não use nomes sem numeração como `decisions.md`, `requirements.md` ou `tasks.md` dentro da pasta da SPEC.
+
+Resposta anterior inválida:
+{invalid_response}
+
+Pedido original:
+{original_prompt}
+
+Regras para a nova resposta:
+1. Retorne pelo menos um marcador `<<<FILE path=...>>>` com fechamento `<<<END_FILE>>>`.
+2. Não use blocos `markdown`, `python`, `java`, `sql` ou similares para arquivos.
+3. Se não for possível implementar a task por falta de contexto, crie um arquivo:
+   `docs/jarvis-blockers/task-{task_number}-blockers.md`
+   explicando o bloqueio e as informações faltantes.
+4. Não use caminho absoluto.
+4.1. Se a task for sobre decisões, use `.jarvis/specs/{feature_name}/03-decisions.md`.
+5. Não use `..`.
+6. Inclua "Validações sugeridas".
+
+Responda somente no formato processável pelo Jarvis, preferindo marcadores `<<<FILE path=...>>>`.
 """
 
     def _implementation_report_template(

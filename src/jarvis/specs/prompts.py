@@ -108,6 +108,19 @@ Funcionalidade:
 Task solicitada:
 {task_number}
 
+Arquivos oficiais da SPEC:
+- `.jarvis/specs/{feature_name}/01-requirements.md`
+- `.jarvis/specs/{feature_name}/02-questions.md`
+- `.jarvis/specs/{feature_name}/03-decisions.md`
+- `.jarvis/specs/{feature_name}/04-acceptance-criteria.md`
+- `.jarvis/specs/{feature_name}/05-technical-design.md`
+- `.jarvis/specs/{feature_name}/06-tasks.md`
+- `.jarvis/specs/{feature_name}/07-test-plan.md`
+- `.jarvis/specs/{feature_name}/08-validation-report.md`
+- `.jarvis/specs/{feature_name}/09-changelog.md`
+
+Não crie arquivos paralelos como `decisions.md`, `requirements.md` ou `tasks.md` dentro da pasta da SPEC. Use sempre os nomes oficiais numerados.
+
 Contexto do projeto:
 {context}
 
@@ -129,22 +142,29 @@ Technical Design:
 Tasks:
 {tasks}
 
+CONTRATO OBRIGATÓRIO PARA IMPLEMENTAÇÃO:
+A resposta será processada por um parser automático. Para que o Jarvis consiga aplicar ou gerar diff, você DEVE retornar pelo menos um bloco de arquivo no formato exato:
+
+<<<FILE path=caminho/relativo/ao/projeto.ext>>>
+conteúdo completo do arquivo aqui
+<<<END_FILE>>>
+
 Regras obrigatórias:
 1. Implemente somente a task solicitada.
 2. Respeite arquitetura, padrões e convenções do projeto.
 3. Não apague arquivos.
 4. Não altere arquivos fora do escopo da task.
-5. Se não houver informação suficiente, gere apenas um relatório explicando o bloqueio.
-6. Quando quiser criar ou alterar arquivos, use exclusivamente blocos neste formato:
-
-```file path=caminho/relativo/ao/projeto.ext
-conteúdo completo do arquivo aqui
-```
-
-7. O caminho deve ser relativo à raiz do projeto.
-8. Não use caminhos absolutos.
-9. Não use `..` no caminho.
+5. O caminho deve ser relativo à raiz do projeto.
+5.1. Para alterar decisões da SPEC, use obrigatoriamente `.jarvis/specs/{feature_name}/03-decisions.md`.
+6. Não use caminhos absolutos.
+7. Não use `..` no caminho.
+8. Não use blocos `python`, `java`, `sql`, `markdown` ou similares para arquivos. Prefira marcadores `<<<FILE path=...>>>` e `<<<END_FILE>>>`.
+9. Se a task não permitir implementação por falta de contexto, ainda assim crie um arquivo de relatório técnico em `docs/jarvis-blockers/task-{task_number}-blockers.md` usando bloco `file path=...`.
 10. Inclua ao final uma seção "Validações sugeridas".
+
+IMPORTANTE:
+- Se você não retornar marcador `<<<FILE path=...>>>` ou bloco `file path=...`, o Jarvis considerará que nada foi implementado.
+- Para criar SQL, Markdown, Python, Java ou qualquer outro arquivo, coloque o conteúdo dentro de um bloco `file path=...`.
 
 Formato esperado:
 # Implementação proposta

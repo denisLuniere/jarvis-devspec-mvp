@@ -23,6 +23,8 @@ class JarvisConfig:
     browser_timeout_seconds: int = int(os.getenv("JARVIS_BROWSER_TIMEOUT_SECONDS", "240"))
     browser_auto_open: bool = os.getenv("JARVIS_BROWSER_AUTO_OPEN", "true").lower() == "true"
     browser_keep_open: bool = os.getenv("JARVIS_BROWSER_KEEP_OPEN", "true").lower() == "true"
+    browser_submit_mode: str = os.getenv("JARVIS_BROWSER_SUBMIT_MODE", "enter").lower()
+    browser_send_check_seconds: int = int(os.getenv("JARVIS_BROWSER_SEND_CHECK_SECONDS", "25"))
 
     voice_enabled: bool = os.getenv("JARVIS_VOICE_ENABLED", "false").lower() == "true"
     voice_language: str = os.getenv("JARVIS_VOICE_LANGUAGE", "pt-BR")

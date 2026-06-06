@@ -70,3 +70,20 @@ Quando falhar, ele cai para o fallback manual: você cola a resposta no terminal
 
 O Jarvis não armazena sua senha. O login fica na sessão local do navegador Playwright.
 Não suba `.jarvis/browser-profile` para o Git.
+
+
+## Troubleshooting: travou no envio
+
+Se o Jarvis abrir o ChatGPT, mas não conseguir enviar a pergunta, tente trocar o modo de envio no `.env`:
+
+```env
+JARVIS_BROWSER_SUBMIT_MODE=button
+```
+
+Ou volte para:
+
+```env
+JARVIS_BROWSER_SUBMIT_MODE=enter
+```
+
+A v0.8.1 valida se o envio começou. Se não detectar envio em `JARVIS_BROWSER_SEND_CHECK_SECONDS`, ele cai para fallback manual.

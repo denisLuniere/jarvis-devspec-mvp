@@ -64,7 +64,7 @@ Modo fake ativo: criando um arquivo demonstrativo para validar o fluxo de implem
 
 ## Arquivos propostos
 
-```file path=docs/jarvis-task-demo.md
+<<<FILE path=docs/jarvis-task-demo.md>>>
 # Arquivo gerado pelo Jarvis
 
 Este arquivo foi criado pelo comando `/spec implement`.
@@ -75,7 +75,7 @@ Objetivo:
 - Validar a aplicação segura de arquivos.
 
 Quando usar OpenAI ou Claude, a IA deverá gerar arquivos reais compatíveis com a arquitetura do projeto.
-```
+<<<END_FILE>>>
 
 ## Validações sugeridas
 

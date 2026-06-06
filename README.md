@@ -4,7 +4,7 @@ Assistente local inspirado no J.A.R.V.I.S., focado em desenvolvimento orientado 
 
 ## Versão atual
 
-v0.8.0
+v0.8.5
 
 ## Principais recursos
 
@@ -104,3 +104,32 @@ Não suba esses arquivos para o Git.
 - Melhorar extração de resposta.
 - Adicionar comando para abrir/reautenticar sessão.
 - Adicionar confirmação antes de aplicar implementação real.
+
+
+## Correção v0.8.5
+
+Se o envio travar no ChatGPT Web, altere no `.env`:
+
+```env
+JARVIS_BROWSER_SUBMIT_MODE=button
+JARVIS_BROWSER_SEND_CHECK_SECONDS=25
+```
+
+Valores possíveis:
+
+```env
+JARVIS_BROWSER_SUBMIT_MODE=enter
+JARVIS_BROWSER_SUBMIT_MODE=button
+```
+
+A v0.8.5 também mostra logs intermediários:
+
+```text
+Procurando caixa de prompt
+Colando prompt
+Enviando prompt
+Verificando se o envio iniciou
+Aguardando resposta
+```
+
+Se não detectar envio, cai para fallback manual em vez de ficar preso.

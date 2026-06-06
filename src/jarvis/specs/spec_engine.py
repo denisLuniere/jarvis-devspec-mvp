@@ -2,7 +2,13 @@ from pathlib import Path
 from datetime import datetime
 from jarvis.tools.file_tool import FileTool
 from jarvis.providers.base import LLMProvider
-from jarvis.specs.prompts import build_refine_prompt, build_design_prompt, build_tasks_prompt
+from jarvis.specs.prompts import (
+    build_refine_prompt,
+    build_design_prompt,
+    build_tasks_prompt,
+    build_implement_prompt,
+)
+from jarvis.specs.implementation import ImplementationParser, ImplementationApplier
 
 def slugify(value: str) -> str:
     return (
@@ -17,6 +23,8 @@ class SpecEngine:
     def __init__(self, file_tool: FileTool, provider: LLMProvider | None = None):
         self.file_tool = file_tool
         self.provider = provider
+        self.implementation_parser = ImplementationParser()
+        self.implementation_applier = ImplementationApplier(file_tool)
 
     def init_project(self, project_path: Path) -> str:
         jarvis_dir = project_path / ".jarvis"
@@ -98,6 +106,71 @@ class SpecEngine:
         self._append_changelog(spec_dir, f"Tasks geradas para '{feature_name}'.")
         return f"Tasks geradas em: {output_path}"
 
+    def implement_task(self, project_path: Path, feature_name: str, task_number: str, apply_changes: bool = True) -> str:
+        self._require_provider()
+        spec_dir = self._spec_dir(project_path, feature_name)
+        context = self._read_project_context(project_path)
+
+        requirements = self._read_optional(spec_dir / "01-requirements.md")
+        questions = self._read_optional(spec_dir / "02-questions.md")
+        decisions = self._read_optional(spec_dir / "03-decisions.md")
+        acceptance = self._read_optional(spec_dir / "04-acceptance-criteria.md")
+        design = self._read_optional(spec_dir / "05-technical-design.md")
+        tasks = self._read_optional(spec_dir / "06-tasks.md")
+
+        prompt = build_implement_prompt(
+            context=context,
+            feature_name=feature_name,
+            task_number=task_number,
+            requirements=requirements,
+            questions=questions,
+            decisions=decisions,
+            acceptance=acceptance,
+            design=design,
+            tasks=tasks,
+        )
+
+        response = self.provider.generate(self._system_prompt(), prompt)
+
+        impl_dir = spec_dir / "10-implementation"
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        proposal_path = impl_dir / f"task-{task_number}-{timestamp}-proposal.md"
+        self.file_tool.write_text(proposal_path, response)
+
+        proposed_files = self.implementation_parser.parse_files(response)
+        apply_results: list[str] = []
+
+        if apply_changes and proposed_files:
+            apply_results = self.implementation_applier.apply(project_path, proposed_files)
+        elif not proposed_files:
+            apply_results = ["Nenhum bloco ```file path=...``` encontrado. Nada foi aplicado no projeto."]
+        else:
+            apply_results = ["Modo preview: alterações não aplicadas."]
+
+        report = self._implementation_report_template(
+            feature_name=feature_name,
+            task_number=task_number,
+            proposal_path=proposal_path,
+            proposed_files=proposed_files,
+            apply_results=apply_results,
+            apply_changes=apply_changes,
+        )
+
+        report_path = impl_dir / f"task-{task_number}-{timestamp}-report.md"
+        self.file_tool.write_text(report_path, report)
+
+        self._append_changelog(
+            spec_dir,
+            f"Implementação da task {task_number} gerada. Arquivos propostos: {len(proposed_files)}. Aplicar alterações: {apply_changes}.",
+        )
+
+        return (
+            f"Implementação da task {task_number} processada.\n"
+            f"Proposta: {proposal_path}\n"
+            f"Relatório: {report_path}\n"
+            + "\n".join(apply_results)
+        )
+
     def list_specs(self, project_path: Path) -> str:
         specs_root = project_path / ".jarvis" / "specs"
         self.file_tool.guard.require_allowed_path(specs_root)
@@ -156,6 +229,51 @@ Você é o Jarvis DevSpec, um assistente de engenharia de software.
 Trabalhe com desenvolvimento orientado por especificações.
 Não implemente código antes de requisitos, critérios de aceite, design técnico e tasks estarem claros.
 Seja objetivo, prático e mantenha rastreabilidade.
+"""
+
+    def _implementation_report_template(
+        self,
+        feature_name: str,
+        task_number: str,
+        proposal_path: Path,
+        proposed_files: list,
+        apply_results: list[str],
+        apply_changes: bool,
+    ) -> str:
+        files_md = "\n".join(f"- `{f.relative_path}`" for f in proposed_files) or "- Nenhum arquivo proposto."
+        results_md = "\n".join(f"- {result}" for result in apply_results) or "- Nenhum resultado."
+
+        return f"""# Implementation Report
+
+## Feature
+
+{feature_name}
+
+## Task
+
+{task_number}
+
+## Modo
+
+{"APLICAÇÃO" if apply_changes else "PREVIEW"}
+
+## Proposta
+
+`{proposal_path}`
+
+## Arquivos propostos
+
+{files_md}
+
+## Resultado da aplicação
+
+{results_md}
+
+## Próximas validações sugeridas
+
+- Revisar diff no Git.
+- Rodar testes do projeto.
+- Atualizar `08-validation-report.md`.
 """
 
     def _project_context_template(self) -> str:
@@ -235,6 +353,12 @@ Você é um desenvolvedor sênior.
 Implemente apenas a task solicitada.
 Respeite architecture.md, standards.md, requirements.md e acceptance-criteria.md.
 Após implementar, informe arquivos alterados e validações necessárias.
+
+Para criar ou alterar arquivos, use:
+
+```file path=caminho/relativo.ext
+conteúdo completo
+```
 """
 
     def _requirements_template(self, feature_name: str, created_at: str) -> str:

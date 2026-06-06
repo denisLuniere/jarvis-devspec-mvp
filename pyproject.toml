@@ -1,6 +1,6 @@
 [project]
 name = "jarvis-devspec-mvp"
-version = "0.2.2"
+version = "0.3.0"
 description = "Jarvis local com desenvolvimento orientado por especificações"
 requires-python = ">=3.11"
 dependencies = [

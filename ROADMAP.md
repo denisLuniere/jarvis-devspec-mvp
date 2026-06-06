@@ -32,12 +32,6 @@ Concluído.
 - Modo voz opcional.
 - Speech-to-text com SpeechRecognition.
 - Text-to-speech com pyttsx3.
-- Atalhos falados:
-  - "Jarvis, ajuda"
-  - "Jarvis, abrir vscode"
-  - "Jarvis, abrir chrome"
-  - "Jarvis, sair"
-
 
 ### v0.2.2
 Concluído.
@@ -48,14 +42,17 @@ Concluído.
 - Correção para reconhecimento comum "Chaves sair".
 - TTS reinicializa se o pyttsx3 travar depois da primeira fala.
 
-## Próximas versões
+### v0.3
+Concluído neste pacote.
 
-### v0.3: Implementação assistida
 - `/spec implement <projeto> <feature> <task-number>`
-- Leitura de contexto da spec.
-- Geração de código por arquivos.
-- Aplicação segura de alterações.
-- Relatório de arquivos alterados.
+- `/spec implement <projeto> <feature> <task-number> --preview`
+- Geração de proposta de implementação.
+- Parser de blocos estruturados `file path=...`.
+- Aplicação segura de arquivos.
+- Relatório de implementação em `10-implementation`.
+
+## Próximas versões
 
 ### v0.4: Validação
 - `/spec validate <projeto> <feature>`

@@ -56,6 +56,30 @@ class CommandRouter:
                 return "Uso: /spec tasks <caminho-projeto> <nome-da-feature>"
             return self.spec_engine.generate_tasks(Path(parts[0]), parts[1])
 
+        if command.startswith("/spec implement "):
+            raw = command.replace("/spec implement ", "", 1).strip()
+            apply_changes = True
+
+            if raw.endswith(" --preview"):
+                apply_changes = False
+                raw = raw.removesuffix(" --preview").strip()
+
+            parts = raw.rsplit(" ", 1)
+            if len(parts) < 2:
+                return "Uso: /spec implement <caminho-projeto> <nome-da-feature> <numero-task> [--preview]"
+
+            project_and_feature = parts[0]
+            task_number = parts[1].strip()
+
+            project_feature_parts = project_and_feature.split(" ", 1)
+            if len(project_feature_parts) < 2:
+                return "Uso: /spec implement <caminho-projeto> <nome-da-feature> <numero-task> [--preview]"
+
+            project_path = Path(project_feature_parts[0])
+            feature_name = project_feature_parts[1]
+
+            return self.spec_engine.implement_task(project_path, feature_name, task_number, apply_changes=apply_changes)
+
         if command.startswith("/open "):
             app_name = command.replace("/open ", "", 1)
             return self.program_tool.open(app_name)
@@ -78,6 +102,8 @@ class CommandRouter:
 /spec refine <caminho-projeto> <nome-da-feature>
 /spec design <caminho-projeto> <nome-da-feature>
 /spec tasks <caminho-projeto> <nome-da-feature>
+/spec implement <caminho-projeto> <nome-da-feature> <numero-task>
+/spec implement <caminho-projeto> <nome-da-feature> <numero-task> --preview
 /open vscode
 /open chrome
 /run <caminho-projeto> <comando>

@@ -4,7 +4,7 @@ Assistente local inspirado no J.A.R.V.I.S., focado em desenvolvimento orientado 
 
 ## Versão atual
 
-v0.2.2
+v0.3.0
 
 ## Funcionalidades
 
@@ -16,6 +16,9 @@ v0.2.2
 - Gerar perguntas de refinamento via IA.
 - Gerar design técnico via IA.
 - Gerar tasks via IA.
+- Implementar task por task via IA.
+- Aplicar arquivos propostos com blocos estruturados.
+- Gerar relatório de implementação.
 - Abrir programas no Windows por comandos permitidos.
 - Rodar comandos locais somente com confirmação.
 - Usar provider `fake`, `openai` ou `anthropic`.
@@ -68,19 +71,7 @@ JARVIS_LISTEN_TIMEOUT=5
 JARVIS_PHRASE_TIME_LIMIT=12
 ```
 
-## Uso
-
-```bash
-jarvis
-```
-
-Ou:
-
-```bash
-python -m jarvis.app
-```
-
-## Comandos de texto
+## Comandos
 
 ```text
 /help
@@ -90,44 +81,68 @@ python -m jarvis.app
 /spec refine E:\Repositories\meu-projeto registro-inconsistencias-wiki
 /spec design E:\Repositories\meu-projeto registro-inconsistencias-wiki
 /spec tasks E:\Repositories\meu-projeto registro-inconsistencias-wiki
+/spec implement E:\Repositories\meu-projeto registro-inconsistencias-wiki 5
+/spec implement E:\Repositories\meu-projeto registro-inconsistencias-wiki 5 --preview
 /open vscode
 /open chrome
 /run E:\Repositories\meu-projeto mvn test
 /exit
 ```
 
-## Comandos de voz
-
-```text
-Jarvis, ajuda
-Jarvis, abra o VS Code
-Jarvis, abrir Google Chrome
-Jarvis, sair
-```
-
-Você também pode ditar comandos completos, mas caminhos Windows longos podem ser difíceis para o reconhecimento de fala.
-
-## Fluxo recomendado para Specs
+## Novo fluxo da v0.3
 
 ```text
 1. /spec init <projeto>
-2. Edite .jarvis/project-context.md
-3. Edite .jarvis/architecture.md
+2. Editar .jarvis/project-context.md
+3. Editar .jarvis/architecture.md
 4. /spec new <projeto> <feature>
-5. Edite 01-requirements.md com a ideia inicial
+5. Editar 01-requirements.md
 6. /spec refine <projeto> <feature>
-7. Responda as perguntas no arquivo 02-questions.md
-8. Ajuste 04-acceptance-criteria.md
+7. Responder 02-questions.md
+8. Ajustar 04-acceptance-criteria.md
 9. /spec design <projeto> <feature>
 10. /spec tasks <projeto> <feature>
+11. /spec implement <projeto> <feature> <numero-task> --preview
+12. Revisar proposta
+13. /spec implement <projeto> <feature> <numero-task>
+```
+
+## Como o Jarvis aplica arquivos
+
+A IA precisa retornar blocos assim:
+
+```text
+```file path=src/main/java/br/com/exemplo/Cliente.java
+conteúdo completo do arquivo
+```
+```
+
+O Jarvis só aplica arquivos com caminhos relativos ao projeto.
+
+Bloqueios básicos:
+
+- caminhos absolutos;
+- caminhos com `..`;
+- `.git`;
+- `.venv`;
+- executáveis e scripts sensíveis como `.exe`, `.bat`, `.cmd`, `.ps1`, `.key`, `.pem`.
+
+## Relatórios
+
+Cada implementação gera arquivos em:
+
+```text
+.jarvis/specs/<feature>/10-implementation/
+```
+
+Exemplo:
+
+```text
+task-5-20260606-153012-proposal.md
+task-5-20260606-153012-report.md
 ```
 
 ## Roadmap
-
-### v0.3
-- Implementar task por task.
-- Gerar patches/arquivos de código.
-- Relatar arquivos alterados.
 
 ### v0.4
 - Validation engine.
@@ -137,12 +152,3 @@ Você também pode ditar comandos completos, mas caminhos Windows longos podem s
 ### v1.0
 - Fluxo completo:
   ideia -> spec -> design -> tasks -> implementação -> testes -> validação.
-
-
-## Correções da v0.2.2
-
-- Melhor normalização de comandos de voz.
-- Suporte a "abra", "abrir", "abre", "inicie", "execute".
-- Suporte a aliases como "vs code", "visual studio code" e "google chrome".
-- Correção para reconhecimentos comuns como "Chaves sair".
-- TTS mais robusto após a primeira fala.

@@ -65,6 +65,27 @@ Implementar a funcionalidade respeitando a arquitetura definida em `.jarvis/arch
 - [ ] 10. Atualizar relatório de validação.
 """
 
+        if "implemente a task" in lower_prompt:
+            return """# Implementação proposta
+
+Modo fake ativo: este exemplo cria apenas um arquivo demonstrativo dentro de `docs/`.
+
+## Arquivos propostos
+
+```file path=docs/jarvis-task-demo.md
+# Arquivo gerado pelo Jarvis
+
+Este arquivo foi criado pelo comando `/spec implement`.
+
+Em um provider real, como OpenAI ou Claude, a IA deve gerar arquivos compatíveis com a arquitetura do projeto.
+```
+
+## Validações sugeridas
+
+- Revisar o arquivo gerado.
+- Rodar testes do projeto quando existirem.
+"""
+
         return (
             "Sou o Jarvis DevSpec MVP em modo local/fake. "
             "Para respostas inteligentes reais, configure JARVIS_PROVIDER=openai ou anthropic no .env."

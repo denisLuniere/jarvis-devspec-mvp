@@ -87,3 +87,76 @@ Formato esperado:
 
 As tasks devem ser pequenas, testáveis e respeitar a arquitetura. Inclua tasks de testes e validação.
 """
+
+def build_implement_prompt(
+    context: str,
+    feature_name: str,
+    task_number: str,
+    requirements: str,
+    questions: str,
+    decisions: str,
+    acceptance: str,
+    design: str,
+    tasks: str,
+) -> str:
+    return f"""
+Você deve implementar uma task específica de uma SPEC.
+
+Funcionalidade:
+{feature_name}
+
+Task solicitada:
+{task_number}
+
+Contexto do projeto:
+{context}
+
+Requirements:
+{requirements}
+
+Questions:
+{questions}
+
+Decisions:
+{decisions}
+
+Acceptance Criteria:
+{acceptance}
+
+Technical Design:
+{design}
+
+Tasks:
+{tasks}
+
+Regras obrigatórias:
+1. Implemente somente a task solicitada.
+2. Respeite arquitetura, padrões e convenções do projeto.
+3. Não apague arquivos.
+4. Não altere arquivos fora do escopo da task.
+5. Se não houver informação suficiente, gere apenas um relatório explicando o bloqueio.
+6. Quando quiser criar ou alterar arquivos, use exclusivamente blocos neste formato:
+
+```file path=caminho/relativo/ao/projeto.ext
+conteúdo completo do arquivo aqui
+```
+
+7. O caminho deve ser relativo à raiz do projeto.
+8. Não use caminhos absolutos.
+9. Não use `..` no caminho.
+10. Inclua ao final uma seção "Validações sugeridas".
+
+Formato esperado:
+# Implementação proposta
+
+## Resumo
+
+## Arquivos propostos
+
+```file path=src/exemplo/Arquivo.ext
+conteúdo
+```
+
+## Validações sugeridas
+- comando ou validação
+"""
